@@ -94,54 +94,22 @@ install -D -m 0755 target-wlroots/release/xremap %{buildroot}%{_bindir}/xremap-w
 %files gnome
 %license LICENSE
 %doc README.md
-%{_bindir}/xremap-gnome
-
-%post gnome
-ln -sf %{_bindir}/xremap-gnome %{_bindir}/xremap
-
-%postun gnome
-if [ $1 -eq 0 ]; then
-    rm -f %{_bindir}/xremap
-fi
+%{_bindir}/xremap
 
 %files x11
 %license LICENSE
 %doc README.md
-%{_bindir}/xremap-x11
-
-%post x11
-ln -sf %{_bindir}/xremap-x11 %{_bindir}/xremap
-
-%postun x11
-if [ $1 -eq 0 ]; then
-    rm -f %{_bindir}/xremap
-fi
+%{_bindir}/xremap
 
 %files kde
 %license LICENSE
 %doc README.md
-%{_bindir}/xremap-kde
-
-%post kde
-ln -sf %{_bindir}/xremap-kde %{_bindir}/xremap
-
-%postun kde
-if [ $1 -eq 0 ]; then
-    rm -f %{_bindir}/xremap
-fi
+%{_bindir}/xremap
 
 %files wlroots
 %license LICENSE
 %doc README.md
-%{_bindir}/xremap-wlroots
-
-%post wlroots
-ln -sf %{_bindir}/xremap-wlroots %{_bindir}/xremap
-
-%postun wlroots
-if [ $1 -eq 0 ]; then
-    rm -f %{_bindir}/xremap
-fi
+%{_bindir}/xremap
 
 %changelog
 * Tue Sep 24 2024 Blake Gardner <blakerg@gmail.com> - 0.10.1-1
