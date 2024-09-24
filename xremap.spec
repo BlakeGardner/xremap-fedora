@@ -16,6 +16,7 @@ xremap is a key remapper for Linux. It supports app-specific remapping and Wayla
 ### Subpackage descriptions
 %package gnome
 Summary:        xremap with GNOME Wayland support
+Conflicts:      %{name}-x11 %{name}-kde %{name}-wlroots
 Requires:       %{name} = %{version}-%{release}
 Requires:       gnome-shell
 
@@ -24,6 +25,7 @@ This variant of xremap is built with GNOME Wayland support.
 
 %package x11
 Summary:        xremap with X11 support
+Conflicts:      %{name}-gnome %{name}-kde %{name}-wlroots
 Requires:       %{name} = %{version}-%{release}
 Requires:       xorg-x11-server-Xorg
 
@@ -32,6 +34,7 @@ This variant of xremap is built with X11 support.
 
 %package kde
 Summary:        xremap with KDE-Plasma Wayland support
+Conflicts:      %{name}-gnome %{name}-x11 %{name}-wlroots
 Requires:       %{name} = %{version}-%{release}
 Requires:       plasma-workspace
 
@@ -40,6 +43,7 @@ This variant of xremap is built with KDE-Plasma Wayland support.
 
 %package wlroots
 Summary:        xremap with wlroots support for Sway, Hyprland, etc.
+Conflicts:      %{name}-gnome %{name}-x11 %{name}-kde
 Requires:       %{name} = %{version}-%{release}
 
 %description wlroots
@@ -75,14 +79,8 @@ popd
 
 
 %install
-### Install the base package
-install -D -m 0755 target/release/xremap %{buildroot}%{_bindir}/xremap
-
-### Install each subpackage binary
-install -D -m 0755 build/gnome/target/release/xremap %{buildroot}%{_bindir}/xremap-gnome
-install -D -m 0755 build/x11/target/release/xremap %{buildroot}%{_bindir}/xremap-x11
-install -D -m 0755 build/kde/target/release/xremap %{buildroot}%{_bindir}/xremap-kde
-install -D -m 0755 build/wlroots/target/release/xremap %{buildroot}%{_bindir}/xremap-wlroots
+### Install the binary from the correct build path
+install -D -m 0755 %{_builddir}/xremap-%{version}/target/release/xremap %{buildroot}%{_bindir}/xremap
 
 
 %files
@@ -91,16 +89,16 @@ install -D -m 0755 build/wlroots/target/release/xremap %{buildroot}%{_bindir}/xr
 %{_bindir}/xremap
 
 %files gnome
-%{_bindir}/xremap-gnome
+%{_bindir}/xremap
 
 %files x11
-%{_bindir}/xremap-x11
+%{_bindir}/xremap
 
 %files kde
-%{_bindir}/xremap-kde
+%{_bindir}/xremap
 
 %files wlroots
-%{_bindir}/xremap-wlroots
+%{_bindir}/xremap
 
 
 %changelog
