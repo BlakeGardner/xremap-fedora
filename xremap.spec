@@ -1,7 +1,6 @@
 Name:           xremap
 Version:        0.10.1
 Release:        1%{?dist}
-%global debug_package %{nil}
 Summary:        A key remapper for Linux supporting app-specific remapping and Wayland.
 
 License:        MIT
@@ -16,9 +15,7 @@ xremap is a key remapper for Linux. It supports app-specific remapping and Wayla
 ### **Subpackage: GNOME**
 %package gnome
 Summary:        xremap with GNOME Wayland support
-Conflicts:      %{name}, %{name}-x11, %{name}-kde, %{name}-wlroots
-Provides:       %{name} = %{version}-%{release}
-Obsoletes:      %{name} < %{version}-%{release}
+Conflicts:      %{name}-gnome-debug, %{name}-x11, %{name}-kde, %{name}-wlroots
 Requires:       gnome-shell
 
 %description gnome
@@ -27,10 +24,7 @@ This variant of xremap is built with GNOME Wayland support.
 ### **Subpackage: X11**
 %package x11
 Summary:        xremap with X11 support
-Conflicts:      %{name}, %{name}-gnome, %{name}-kde, %{name}-wlroots
-Provides:       %{name} = %{version}-%{release}
-Obsoletes:      %{name} < %{version}-%{release}
-Requires:       xorg-x11-server-Xorg
+Conflicts:      %{name}-x11-debug, %{name}-gnome, %{name}-kde, %{name}-wlroots
 
 %description x11
 This variant of xremap is built with X11 support.
@@ -38,9 +32,7 @@ This variant of xremap is built with X11 support.
 ### **Subpackage: KDE**
 %package kde
 Summary:        xremap with KDE-Plasma Wayland support
-Conflicts:      %{name}, %{name}-gnome, %{name}-x11, %{name}-wlroots
-Provides:       %{name} = %{version}-%{release}
-Obsoletes:      %{name} < %{version}-%{release}
+Conflicts:      %{name}-kde-debug, %{name}-gnome, %{name}-x11, %{name}-wlroots
 Requires:       plasma-workspace
 
 %description kde
@@ -49,49 +41,95 @@ This variant of xremap is built with KDE-Plasma Wayland support.
 ### **Subpackage: wlroots**
 %package wlroots
 Summary:        xremap with wlroots support (Sway, Hyprland, etc.)
-Conflicts:      %{name}, %{name}-gnome, %{name}-x11, %{name}-kde
-Provides:       %{name} = %{version}-%{release}
-Obsoletes:      %{name} < %{version}-%{release}
+Conflicts:      %{name}-wlroots-debug, %{name}-gnome, %{name}-x11, %{name}-kde
 
 %description wlroots
-This variant of xremap is built with wlroots support for Sway, Hyprland, etc.
+This variant of xremap is built with wlroots support (Sway, Hyprland, etc.).
+
+### **Debug Subpackage: Base**
+%package debug
+Summary:        Debug version of xremap
+Conflicts:      %{name}, %{name}-gnome, %{name}-x11, %{name}-kde, %{name}-wlroots
+Provides:       %{name} = %{version}-%{release}
+
+%description debug
+This package contains the debug version of xremap built without optimizations.
+
+### **Debug Subpackage: GNOME**
+%package gnome-debug
+Summary:        Debug version of xremap with GNOME Wayland support
+Conflicts:      %{name}, %{name}-gnome, %{name}-x11, %{name}-kde, %{name}-wlroots
+Requires:       gnome-shell
+Provides:       %{name} = %{version}-%{release}
+
+%description gnome-debug
+This package contains the debug version of xremap with GNOME Wayland support built without optimizations.
+
+### **Debug Subpackage: X11**
+%package x11-debug
+Summary:        Debug version of xremap with X11 support
+Conflicts:      %{name}, %{name}-gnome, %{name}-x11, %{name}-kde, %{name}-wlroots
+
+%description x11-debug
+This package contains the debug version of xremap with X11 support built without optimizations.
+
+### **Debug Subpackage: KDE**
+%package kde-debug
+Summary:        Debug version of xremap with KDE-Plasma Wayland support
+Conflicts:      %{name}, %{name}-gnome, %{name}-x11, %{name}-kde, %{name}-wlroots
+Requires:       plasma-workspace
+
+%description kde-debug
+This package contains the debug version of xremap with KDE-Plasma Wayland support built without optimizations.
+
+### **Debug Subpackage: wlroots**
+%package wlroots-debug
+Summary:        Debug version of xremap with wlroots support
+Conflicts:      %{name}, %{name}-gnome, %{name}-x11, %{name}-kde, %{name}-wlroots
+
+%description wlroots-debug
+This package contains the debug version of xremap with wlroots support built without optimizations.
 
 %prep
 %autosetup -n %{name}-%{version}
 
 %build
-# Build the base package without any features
-export RUSTFLAGS="-C debuginfo=2 -C metadata=base"
+# Build the release versions
+export RUSTFLAGS="-C debuginfo=2 -C opt-level=3"
 cargo build --release
 
-# Build each variant in separate target directories with unique metadata
-# GNOME build
-export RUSTFLAGS="-C debuginfo=2 -C metadata=gnome"
-cargo build --release --features gnome --target-dir target-gnome
+cargo build --release --features gnome --target-dir target-gnome-release
+cargo build --release --features x11 --target-dir target-x11-release
+cargo build --release --features kde --target-dir target-kde-release
+cargo build --release --features wlroots --target-dir target-wlroots-release
 
-# X11 build
-export RUSTFLAGS="-C debuginfo=2 -C metadata=x11"
-cargo build --release --features x11 --target-dir target-x11
+# Build the debug versions
+export RUSTFLAGS="-C debuginfo=2 -C opt-level=0"
+cargo build
 
-# KDE build
-export RUSTFLAGS="-C debuginfo=2 -C metadata=kde"
-cargo build --release --features kde --target-dir target-kde
-
-# wlroots build
-export RUSTFLAGS="-C debuginfo=2 -C metadata=wlroots"
-cargo build --release --features wlroots --target-dir target-wlroots
+cargo build --features gnome --target-dir target-gnome-debug
+cargo build --features x11 --target-dir target-x11-debug
+cargo build --features kde --target-dir target-kde-debug
+cargo build --features wlroots --target-dir target-wlroots-debug
 
 %install
 rm -rf %{buildroot}
 
-# Install the base package binary
+# Install the release binaries
 install -D -m 0755 target/release/xremap %{buildroot}%{_bindir}/xremap
 
-# Install variant binaries to %{_bindir}/xremap-<variant>
-install -D -m 0755 target-gnome/release/xremap %{buildroot}%{_bindir}/xremap-gnome
-install -D -m 0755 target-x11/release/xremap %{buildroot}%{_bindir}/xremap-x11
-install -D -m 0755 target-kde/release/xremap %{buildroot}%{_bindir}/xremap-kde
-install -D -m 0755 target-wlroots/release/xremap %{buildroot}%{_bindir}/xremap-wlroots
+install -D -m 0755 target-gnome-release/release/xremap %{buildroot}%{_bindir}/xremap-gnome
+install -D -m 0755 target-x11-release/release/xremap %{buildroot}%{_bindir}/xremap-x11
+install -D -m 0755 target-kde-release/release/xremap %{buildroot}%{_bindir}/xremap-kde
+install -D -m 0755 target-wlroots-release/release/xremap %{buildroot}%{_bindir}/xremap-wlroots
+
+# Install the debug binaries (to separate paths)
+install -D -m 0755 target/debug/xremap %{buildroot}%{_bindir}/xremap-debug
+
+install -D -m 0755 target-gnome-debug/debug/xremap %{buildroot}%{_bindir}/xremap-gnome-debug
+install -D -m 0755 target-x11-debug/debug/xremap %{buildroot}%{_bindir}/xremap-x11-debug
+install -D -m 0755 target-kde-debug/debug/xremap %{buildroot}%{_bindir}/xremap-kde-debug
+install -D -m 0755 target-wlroots-debug/debug/xremap %{buildroot}%{_bindir}/xremap-wlroots-debug
 
 %files
 %license LICENSE
@@ -154,6 +192,75 @@ if [ $1 -eq 0 ]; then
     rm -f %{_bindir}/xremap
 fi
 
+%files debug
+%license LICENSE
+%doc README.md
+%{_bindir}/xremap-debug
+
+%post debug
+cp -f %{_bindir}/xremap-debug %{_bindir}/xremap
+
+%postun debug
+if [ $1 -eq 0 ]; then
+    rm -f %{_bindir}/xremap
+fi
+
+%files gnome-debug
+%license LICENSE
+%doc README.md
+%{_bindir}/xremap-debug
+%{_bindir}/xremap-gnome-debug
+
+%post gnome-debug
+cp -f %{_bindir}/xremap-gnome-debug %{_bindir}/xremap
+
+%postun gnome-debug
+if [ $1 -eq 0 ]; then
+    rm -f %{_bindir}/xremap
+fi
+
+%files x11-debug
+%license LICENSE
+%doc README.md
+%{_bindir}/xremap-debug
+%{_bindir}/xremap-x11-debug
+
+%post x11-debug
+cp -f %{_bindir}/xremap-x11-debug %{_bindir}/xremap
+
+%postun x11-debug
+if [ $1 -eq 0 ]; then
+    rm -f %{_bindir}/xremap
+fi
+
+%files kde-debug
+%license LICENSE
+%doc README.md
+%{_bindir}/xremap-debug
+%{_bindir}/xremap-kde-debug
+
+%post kde-debug
+cp -f %{_bindir}/xremap-kde-debug %{_bindir}/xremap
+
+%postun kde-debug
+if [ $1 -eq 0 ]; then
+    rm -f %{_bindir}/xremap
+fi
+
+%files wlroots-debug
+%license LICENSE
+%doc README.md
+%{_bindir}/xremap-debug
+%{_bindir}/xremap-wlroots-debug
+
+%post wlroots-debug
+cp -f %{_bindir}/xremap-wlroots-debug %{_bindir}/xremap
+
+%postun wlroots-debug
+if [ $1 -eq 0 ]; then
+    rm -f %{_bindir}/xremap
+fi
+
 %changelog
 * Tue Sep 24 2024 Blake Gardner <blakerg@gmail.com> - 0.10.1-1
-- Simplified spec by installing variant binaries directly to %{_bindir}/xremap and resolving build errors.
+- Adjusted spec to build and include both release and debug versions of xremap.
