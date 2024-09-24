@@ -1,7 +1,7 @@
 Name:           xremap
 Version:        0.10.1
 Release:        1%{?dist}
-Summary:        A key remapper for Linux supporting app-specific remapping and Wayland.
+Summary:        A key remapper for X11 and Wayland
 
 License:        MIT
 URL:            https://github.com/xremap/xremap
@@ -19,7 +19,7 @@ Conflicts:      %{name}-gnome-debug, %{name}-x11, %{name}-kde, %{name}-wlroots
 Requires:       gnome-shell
 
 %description gnome
-This variant of xremap is built with GNOME Wayland support.
+This version of xremap is built with GNOME Wayland support. You must have the xremap gnome shell extension to use app-specific remapping.
 
 ### **Subpackage: X11**
 %package x11
@@ -27,7 +27,7 @@ Summary:        xremap with X11 support
 Conflicts:      %{name}-x11-debug, %{name}-gnome, %{name}-kde, %{name}-wlroots
 
 %description x11
-This variant of xremap is built with X11 support.
+This version of xremap is built with X11 support.
 
 ### **Subpackage: KDE**
 %package kde
@@ -36,7 +36,7 @@ Conflicts:      %{name}-kde-debug, %{name}-gnome, %{name}-x11, %{name}-wlroots
 Requires:       plasma-workspace
 
 %description kde
-This variant of xremap is built with KDE-Plasma Wayland support.
+This version of xremap is built with KDE-Plasma Wayland support.
 
 ### **Subpackage: wlroots**
 %package wlroots
@@ -44,7 +44,7 @@ Summary:        xremap with wlroots support (Sway, Hyprland, etc.)
 Conflicts:      %{name}-wlroots-debug, %{name}-gnome, %{name}-x11, %{name}-kde
 
 %description wlroots
-This variant of xremap is built with wlroots support (Sway, Hyprland, etc.).
+This version of xremap is built with wlroots support (Sway, Hyprland, etc.).
 
 ### **Debug Subpackage: Base**
 %package debug
