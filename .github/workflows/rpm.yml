@@ -30,7 +30,7 @@ jobs:
           dnf -y update
 
           # Install RPM build tools and dependencies
-          dnf install -y rpm-build rpmdevtools dnf-plugins-core
+          dnf install -y rpm-build rpmdevtools dnf-plugins-core copr-cli
 
           # Install 'builddep' command for DNF
           dnf install -y 'dnf-command(builddep)'
@@ -76,3 +76,16 @@ jobs:
           name: srpm
           path: |
             ~/rpmbuild/SRPMS/*.src.rpm
+
+      - name: Configure copr-cli
+        run: |
+          mkdir -p ~/.config
+          echo "[copr-cli]" > ~/.config/copr
+          echo "login = ${{ secrets.COPR_LOGIN }}" >> ~/.config/copr
+          echo "username = blakegardner" >> ~/.config/copr
+          echo "token = ${{ secrets.COPR_TOKEN }}" >> ~/.config/copr
+          echo "copr_url = https://copr.fedorainfracloud.org" >> ~/.config/copr
+          
+      - name: Submit Source RPM to COPR
+        run: |
+          copr-cli build blakegardner/xremap ~/rpmbuild/SRPMS/xremap-*.src.rpm
