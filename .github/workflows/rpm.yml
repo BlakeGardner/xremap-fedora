@@ -36,9 +36,6 @@ jobs:
           # Install 'builddep' command for DNF
           dnf install -y 'dnf-command(builddep)'
 
-          # Install spectool for downloading sources
-          dnf install -y spectool
-
           # Set up RPM build environment
           rpmdev-setuptree
 
