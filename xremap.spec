@@ -1,7 +1,8 @@
 Name:           xremap
 Version:        0.10.1
-Release:        1%{?dist}
+Release:        2%{?dist}
 %define _debugsource_template %{nil}
+%global debug_package %{nil}
 Summary:        A key remapper for Linux supporting app-specific remapping and Wayland.
 
 License:        MIT
@@ -54,23 +55,23 @@ This variant of xremap is built with wlroots support for compositors like Sway a
 
 %build
 # Build vanilla variant
-export RUSTFLAGS="-C debuginfo=2 -C metadata=vanilla"
+export RUSTFLAGS="-C metadata=vanilla"
 cargo build --release --target-dir target-vanilla
 
 # Build GNOME variant
-export RUSTFLAGS="-C debuginfo=2 -C metadata=gnome"
+export RUSTFLAGS="-C metadata=gnome"
 cargo build --release --features gnome --target-dir target-gnome
 
 # Build X11 variant
-export RUSTFLAGS="-C debuginfo=2 -C metadata=x11"
+export RUSTFLAGS="-C metadata=x11"
 cargo build --release --features x11 --target-dir target-x11
 
 # Build KDE variant
-export RUSTFLAGS="-C debuginfo=2 -C metadata=kde"
+export RUSTFLAGS="-C metadata=kde"
 cargo build --release --features kde --target-dir target-kde
 
 # Build wlroots variant
-export RUSTFLAGS="-C debuginfo=2 -C metadata=wlroots"
+export RUSTFLAGS="-C metadata=wlroots"
 cargo build --release --features wlroots --target-dir target-wlroots
 
 %install
@@ -134,5 +135,8 @@ udevadm trigger
 /usr/lib/udev/rules.d/00-xremap-input.rules
 
 %changelog
+* Tue Sep 25 2024 Blake Gardner <blakerg@gmail.com> - 0.10.1-2
+- Disabled debug info RPM builds and removed debug symbols from Rust binaries
+
 * Tue Sep 24 2024 Blake Gardner <blakerg@gmail.com> - 0.10.1-1
 - Initial package release
