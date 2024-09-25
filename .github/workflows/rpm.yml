@@ -16,7 +16,7 @@ jobs:
 
     # Run the job inside a Fedora container
     container:
-      image: fedora:38
+      image: fedora:40
 
     steps:
       # Checkout the repository
