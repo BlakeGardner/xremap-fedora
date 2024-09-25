@@ -7,6 +7,7 @@ Summary:        A key remapper for Linux supporting app-specific remapping and W
 License:        MIT
 URL:            https://github.com/xremap/xremap
 Source0:        https://github.com/xremap/xremap/archive/refs/tags/v%{version}.tar.gz
+Source1:        00-xremap-input.rules
 
 BuildRequires:  rust, cargo
 
@@ -90,31 +91,48 @@ install -D -m 0755 target-kde/release/xremap %{buildroot}%{_bindir}/xremap
 # Install wlroots variant
 install -D -m 0755 target-wlroots/release/xremap %{buildroot}%{_bindir}/xremap
 
+# Install udev rules
+install -D -m 0644 %{SOURCE1} %{buildroot}/usr/lib/udev/rules.d/00-xremap-input.rules
+
+%pre
+# Create 'input' group if it doesn't exist
+getent group input >/dev/null || groupadd -r input
+
+%post
+# Reload udev rules
+udevadm control --reload-rules
+udevadm trigger
+
 %files
 %license LICENSE
 %doc README.md
 %{_bindir}/xremap
+/usr/lib/udev/rules.d/00-xremap-input.rules
 
 %files gnome
 %license LICENSE
 %doc README.md
 %{_bindir}/xremap
+/usr/lib/udev/rules.d/00-xremap-input.rules
 
 %files x11
 %license LICENSE
 %doc README.md
 %{_bindir}/xremap
+/usr/lib/udev/rules.d/00-xremap-input.rules
 
 %files kde
 %license LICENSE
 %doc README.md
 %{_bindir}/xremap
+/usr/lib/udev/rules.d/00-xremap-input.rules
 
 %files wlroots
 %license LICENSE
 %doc README.md
 %{_bindir}/xremap
+/usr/lib/udev/rules.d/00-xremap-input.rules
 
 %changelog
 * Tue Sep 24 2024 Blake Gardner <blakerg@gmail.com> - 0.10.1-1
-- Updated spec to install binaries directly and remove symbolic links.
+- Initial package release
