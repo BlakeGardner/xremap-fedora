@@ -13,45 +13,37 @@ BuildRequires:  rust, cargo
 %description
 xremap is a key remapper for Linux. It supports app-specific remapping and Wayland.
 
-### **Subpackage: GNOME**
+### **Main Package**
+Conflicts:      %{name}-gnome, %{name}-x11, %{name}-kde, %{name}-wlroots
+Obsoletes:      %{name} < %{version}-%{release}
+
 %package gnome
 Summary:        xremap with GNOME Wayland support
 Conflicts:      %{name}, %{name}-x11, %{name}-kde, %{name}-wlroots
-Provides:       %{name} = %{version}-%{release}
-Obsoletes:      %{name} < %{version}-%{release}
 Requires:       gnome-shell
 
 %description gnome
 This variant of xremap is built with GNOME Wayland support.
 
-### **Subpackage: X11**
 %package x11
 Summary:        xremap with X11 support
 Conflicts:      %{name}, %{name}-gnome, %{name}-kde, %{name}-wlroots
-Provides:       %{name} = %{version}-%{release}
-Obsoletes:      %{name} < %{version}-%{release}
 Requires:       xorg-x11-server-Xorg
 
 %description x11
 This variant of xremap is built with X11 support.
 
-### **Subpackage: KDE**
 %package kde
 Summary:        xremap with KDE Plasma Wayland support
 Conflicts:      %{name}, %{name}-gnome, %{name}-x11, %{name}-wlroots
-Provides:       %{name} = %{version}-%{release}
-Obsoletes:      %{name} < %{version}-%{release}
 Requires:       plasma-workspace
 
 %description kde
 This variant of xremap is built with KDE Plasma Wayland support.
 
-### **Subpackage: wlroots**
 %package wlroots
 Summary:        xremap with wlroots support (Sway, Hyprland, etc.)
 Conflicts:      %{name}, %{name}-gnome, %{name}-x11, %{name}-kde
-Provides:       %{name} = %{version}-%{release}
-Obsoletes:      %{name} < %{version}-%{release}
 
 %description wlroots
 This variant of xremap is built with wlroots support for compositors like Sway and Hyprland.
@@ -60,6 +52,10 @@ This variant of xremap is built with wlroots support for compositors like Sway a
 %autosetup -n %{name}-%{version}
 
 %build
+# Build vanilla variant
+export RUSTFLAGS="-C debuginfo=2 -C metadata=vanilla"
+cargo build --release --target-dir target-vanilla
+
 # Build GNOME variant
 export RUSTFLAGS="-C debuginfo=2 -C metadata=gnome"
 cargo build --release --features gnome --target-dir target-gnome
@@ -79,17 +75,25 @@ cargo build --release --features wlroots --target-dir target-wlroots
 %install
 rm -rf %{buildroot}
 
+# Install vanilla variant
+install -D -m 0755 target-vanilla/release/xremap %{buildroot}%{_bindir}/xremap
+
 # Install GNOME variant
-install -D -m 0755 target-gnome/release/xremap %{buildroot}%{_bindir}/xremap-gnome
+install -D -m 0755 target-gnome/release/xremap %{buildroot}%{_bindir}/xremap
 
 # Install X11 variant
-install -D -m 0755 target-x11/release/xremap %{buildroot}%{_bindir}/xremap-x11
+install -D -m 0755 target-x11/release/xremap %{buildroot}%{_bindir}/xremap
 
 # Install KDE variant
-install -D -m 0755 target-kde/release/xremap %{buildroot}%{_bindir}/xremap-kde
+install -D -m 0755 target-kde/release/xremap %{buildroot}%{_bindir}/xremap
 
 # Install wlroots variant
-install -D -m 0755 target-wlroots/release/xremap %{buildroot}%{_bindir}/xremap-wlroots
+install -D -m 0755 target-wlroots/release/xremap %{buildroot}%{_bindir}/xremap
+
+%files
+%license LICENSE
+%doc README.md
+%{_bindir}/xremap
 
 %files gnome
 %license LICENSE
@@ -113,4 +117,4 @@ install -D -m 0755 target-wlroots/release/xremap %{buildroot}%{_bindir}/xremap-w
 
 %changelog
 * Tue Sep 24 2024 Blake Gardner <blakerg@gmail.com> - 0.10.1-1
-- Corrected macro to disable debugsource package generation, resolving build error.
+- Updated spec to install binaries directly and remove symbolic links.
