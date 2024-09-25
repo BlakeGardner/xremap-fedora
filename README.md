@@ -4,7 +4,7 @@
 
 [![Copr build status](https://copr.fedorainfracloud.org/coprs/blakegardner/xremap/package/xremap/status_image/last_build.png)](https://copr.fedorainfracloud.org/coprs/blakegardner/xremap/package/xremap/)
 
-This repository contains the RPM spec file and packaging scripts for [xremap](https://github.com/k0kubun/xremap), a key remapper for Linux supporting app-specific remapping and Wayland.
+This repository contains the RPM spec file and packaging scripts for [xremap](https://github.com/xremap/xremap), a key remapper for Linux supporting app-specific remapping and Wayland.
 
 ## Installation Instructions
 
