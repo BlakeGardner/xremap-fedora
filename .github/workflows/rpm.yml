@@ -1,0 +1,83 @@
+name: Build RPM Packages
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - master
+  workflow_dispatch:
+
+jobs:
+  build:
+    # Specify the runner
+    runs-on: ubuntu-latest
+
+    # Run the job inside a Fedora container
+    container:
+      image: fedora:40
+      options: --privileged
+
+    steps:
+      # Checkout the repository
+      - name: Checkout the repository
+        uses: actions/checkout@v3
+
+      # Install Required Packages
+      - name: Install Required Packages
+        run: |
+          # Update the package index
+          dnf -y update
+
+          # Install RPM build tools and dependencies
+          dnf install -y rpm-build rpmdevtools dnf-plugins-core
+
+          # Install 'builddep' command for DNF
+          dnf install -y 'dnf-command(builddep)'
+
+          # Install spectool for downloading sources
+          dnf install -y spectool
+
+          # Set up RPM build environment
+          rpmdev-setuptree
+
+      # Copy Spec and Source Files
+      - name: Copy Spec and Source Files
+        run: |
+          # Copy xremap.spec to SPECS directory
+          cp xremap.spec ~/rpmbuild/SPECS/
+
+          # Copy 00-xremap-input.rules to SOURCES directory
+          cp 00-xremap-input.rules ~/rpmbuild/SOURCES/
+
+      # Download the Source Tarball
+      - name: Download Source Tarball
+        run: |
+          cd ~/rpmbuild/SPECS
+
+          # Download sources defined in the spec file
+          spectool -g -R xremap.spec
+
+      # Install Build Dependencies
+      - name: Install Build Dependencies
+        run: |
+          # Install packages required to build xremap
+          dnf builddep -y ~/rpmbuild/SPECS/xremap.spec
+
+      # Build the RPM Packages
+      - name: Build RPM Packages
+        run: |
+          cd ~/rpmbuild/SPECS
+
+          # Build both source and binary RPMs
+          rpmbuild -ba xremap.spec
+
+      # Upload RPM Packages as Artifacts
+      - name: Upload RPM Packages
+        uses: actions/upload-artifact@v3
+        with:
+          name: rpm-packages
+          path: |
+            ~/rpmbuild/RPMS/**/*.rpm
+            ~/rpmbuild/SRPMS/*.rpm
