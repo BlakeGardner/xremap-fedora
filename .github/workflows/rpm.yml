@@ -55,12 +55,6 @@ jobs:
           # Download sources defined in the spec file
           spectool -g -R xremap.spec
 
-      # Install Build Dependencies
-      - name: Install Build Dependencies
-        run: |
-          # Install packages required to build xremap
-          dnf builddep -y ~/rpmbuild/SPECS/xremap.spec
-
       # Build the SRPM
       - name: Build the Source RPM (SRPM)
         run: |
