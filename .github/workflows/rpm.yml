@@ -1,12 +1,12 @@
-name: Build RPM Packages
+name: Build SRPM for COPR
 
 on:
   push:
     branches:
-      - master
+      - main
   pull_request:
     branches:
-      - master
+      - main
   workflow_dispatch:
 
 jobs:
@@ -16,8 +16,7 @@ jobs:
 
     # Run the job inside a Fedora container
     container:
-      image: fedora:40
-      options: --privileged
+      image: fedora:38
 
     steps:
       # Checkout the repository
@@ -35,6 +34,9 @@ jobs:
 
           # Install 'builddep' command for DNF
           dnf install -y 'dnf-command(builddep)'
+
+          # Install spectool for downloading sources
+          dnf install -y spectool
 
           # Set up RPM build environment
           rpmdev-setuptree
@@ -62,19 +64,18 @@ jobs:
           # Install packages required to build xremap
           dnf builddep -y ~/rpmbuild/SPECS/xremap.spec
 
-      # Build the RPM Packages
-      - name: Build RPM Packages
+      # Build the SRPM
+      - name: Build the Source RPM (SRPM)
         run: |
           cd ~/rpmbuild/SPECS
 
-          # Build both source and binary RPMs
-          rpmbuild -ba xremap.spec
+          # Build the SRPM
+          rpmbuild -bs xremap.spec
 
-      # Upload RPM Packages as Artifacts
-      - name: Upload RPM Packages
+      # Upload SRPM as Artifact
+      - name: Upload SRPM
         uses: actions/upload-artifact@v3
         with:
-          name: rpm-packages
+          name: srpm
           path: |
-            ~/rpmbuild/RPMS/**/*.rpm
-            ~/rpmbuild/SRPMS/*.rpm
+            ~/rpmbuild/SRPMS/*.src.rpm
