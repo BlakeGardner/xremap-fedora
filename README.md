@@ -16,13 +16,13 @@ sudo dnf copr enable blakegardner/xremap
 
 ## Available Variants
 
-Due to differences in how input events are handled across desktop environments and display servers, `xremap` provides several variants:
+Due to differences in how application specific remapping is implemented in different desktop environments, multiple variants of `xremap` are available. Choose the variant that best matches your desktop environment.
 
-- **Vanilla (`xremap`)**: The default build without any specific backend features.
-- **GNOME (`xremap-gnome`)**: Built with GNOME Wayland support.
-- **X11 (`xremap-x11`)**: Built with X11 support.
-- **KDE (`xremap-kde`)**: Built with KDE Plasma Wayland support.
-- **wlroots (`xremap-wlroots`)**: Built with wlroots support for compositors like Sway and Hyprland.
+- **Vanilla (`xremap`)**: Use this variant if you're unsure which one to choose.
+- **GNOME (`xremap-gnome`)**: This variant is recommended if you want application-specific remapping to work in GNOME.
+- **KDE (`xremap-kde`)**: This variant is recommended if you want application-specific remapping to work in KDE Plasma.
+- **wlroots (`xremap-wlroots`)**: This variant is recommended if you're using a wlroots-based compositor.
+- **X11 (`xremap-x11`)**: This variant is recommended if you're using an X11-based desktop environment.
 
 **Note:** Only one variant can be installed at a time.
 
@@ -31,7 +31,7 @@ Due to differences in how input events are handled across desktop environments a
 To switch between different variants of `xremap`, use the `dnf swap` command. This command safely replaces one package with another, handling any conflicts.
 
 ```bash
-sudo dnf swap xremap-gnome xremap-wlroots
+sudo dnf swap xremap xremap-gnome
 ```
 
 ## Permissions and Udev Rules
