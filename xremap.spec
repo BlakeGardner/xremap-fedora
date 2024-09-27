@@ -76,19 +76,19 @@ cargo build --release --features wlroots --target-dir target-wlroots
 rm -rf %{buildroot}
 
 # Install vanilla variant
-install -D -m 0755 target-vanilla/release/xremap %{buildroot}%{_bindir}/xremap
+install -D -m 0755 target-vanilla/release/xremap %{buildroot}%{_bindir}/xremap-vanilla
 
 # Install GNOME variant
-install -D -m 0755 target-gnome/release/xremap %{buildroot}%{_bindir}/xremap
+install -D -m 0755 target-gnome/release/xremap %{buildroot}%{_bindir}/xremap-gnome
 
 # Install X11 variant
-install -D -m 0755 target-x11/release/xremap %{buildroot}%{_bindir}/xremap
+install -D -m 0755 target-x11/release/xremap %{buildroot}%{_bindir}/xremap-x11
 
 # Install KDE variant
-install -D -m 0755 target-kde/release/xremap %{buildroot}%{_bindir}/xremap
+install -D -m 0755 target-kde/release/xremap %{buildroot}%{_bindir}/xremap-kde
 
 # Install wlroots variant
-install -D -m 0755 target-wlroots/release/xremap %{buildroot}%{_bindir}/xremap
+install -D -m 0755 target-wlroots/release/xremap %{buildroot}%{_bindir}/xremap-wlroots
 
 # Install udev rules
 install -D -m 0644 %{SOURCE1} %{buildroot}/usr/lib/udev/rules.d/00-xremap-input.rules
@@ -98,41 +98,80 @@ install -D -m 0644 %{SOURCE1} %{buildroot}/usr/lib/udev/rules.d/00-xremap-input.
 getent group input >/dev/null || groupadd -r input
 
 %post
-# Reload udev rules
-udevadm control --reload-rules
-udevadm trigger
+# Vanilla variant
+alternatives --install /usr/bin/xremap xremap %{_bindir}/xremap-vanilla 10
+
+%preun
+if [ $1 -eq 0 ]; then
+    alternatives --remove xremap %{_bindir}/xremap-vanilla
+fi
+
+%post gnome
+alternatives --install /usr/bin/xremap xremap %{_bindir}/xremap-gnome 20
+
+%preun gnome
+if [ $1 -eq 0 ]; then
+    alternatives --remove xremap %{_bindir}/xremap-gnome
+fi
+
+%post x11
+alternatives --install /usr/bin/xremap xremap %{_bindir}/xremap-x11 20
+
+%preun x11
+if [ $1 -eq 0 ]; then
+    alternatives --remove xremap %{_bindir}/xremap-x11
+fi
+
+%post kde
+alternatives --install /usr/bin/xremap xremap %{_bindir}/xremap-kde 20
+
+%preun kde
+if [ $1 -eq 0 ]; then
+    alternatives --remove xremap %{_bindir}/xremap-kde
+fi
+
+%post wlroots
+alternatives --install /usr/bin/xremap xremap %{_bindir}/xremap-wlroots 20
+
+%preun wlroots
+if [ $1 -eq 0 ]; then
+    alternatives --remove xremap %{_bindir}/xremap-wlroots
+fi
 
 %files
 %license LICENSE
 %doc README.md
-%{_bindir}/xremap
+%{_bindir}/xremap-vanilla
 /usr/lib/udev/rules.d/00-xremap-input.rules
 
 %files gnome
 %license LICENSE
 %doc README.md
-%{_bindir}/xremap
+%{_bindir}/xremap-gnome
 /usr/lib/udev/rules.d/00-xremap-input.rules
 
 %files x11
 %license LICENSE
 %doc README.md
-%{_bindir}/xremap
+%{_bindir}/xremap-x11
 /usr/lib/udev/rules.d/00-xremap-input.rules
 
 %files kde
 %license LICENSE
 %doc README.md
-%{_bindir}/xremap
+%{_bindir}/xremap-kde
 /usr/lib/udev/rules.d/00-xremap-input.rules
 
 %files wlroots
 %license LICENSE
 %doc README.md
-%{_bindir}/xremap
+%{_bindir}/xremap-wlroots
 /usr/lib/udev/rules.d/00-xremap-input.rules
 
 %changelog
+* Tue Sep 27 2024 Blake Gardner <blakerg@gmail.com> - 0.10.1-3
+- Use alternatives system to manage multiple xremap binaries
+
 * Tue Sep 27 2024 Blake Gardner <blakerg@gmail.com> - 0.10.1-3
 - Re-enabled debug rpms and debug symbols in Rust binaries
 
