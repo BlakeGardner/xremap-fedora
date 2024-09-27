@@ -1,6 +1,6 @@
 Name:           xremap
 Version:        0.10.1
-Release:        3%{?dist}
+Release:        4%{?dist}
 %define _debugsource_template %{nil}
 Summary:        A key remapper for Linux supporting app-specific remapping and Wayland.
 
