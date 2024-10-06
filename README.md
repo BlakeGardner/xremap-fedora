@@ -12,6 +12,7 @@ The RPM packages are available via Fedora COPR.
 
 ```bash
 sudo dnf copr enable blakegardner/xremap
+sudo dnf install xremap-gnome
 ```
 
 ## Available Variants
