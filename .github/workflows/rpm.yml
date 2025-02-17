@@ -65,7 +65,7 @@ jobs:
 
       # Upload SRPM as Artifact
       - name: Upload SRPM
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: srpm
           path: |
