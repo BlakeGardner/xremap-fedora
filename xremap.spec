@@ -1,5 +1,5 @@
 Name:           xremap
-Version:        0.10.3
+Version:        0.10.5
 Release:        1%{?dist}
 %define _debugsource_template %{nil}
 Summary:        A key remapper for Linux supporting app-specific remapping and Wayland.
@@ -169,6 +169,9 @@ fi
 /usr/lib/udev/rules.d/00-xremap-input.rules
 
 %changelog
+* Mon Feb 17 2025 Blake Gardner <blakerg@gmail.com> - 0.10.5-1
+- Update xremap to upstream version 0.10.5
+
 * Sun Dec 29 2024 Blake Gardner <blakerg@gmail.com> - 0.10.3-1
 - Update xremap to upstream version 0.10.3
 
