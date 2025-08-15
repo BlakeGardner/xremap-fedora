@@ -1,4 +1,4 @@
-name: Build SRPM for COPR
+name: Build RPMs and submit to COPR
 
 on:
   push:
@@ -10,7 +10,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  build:
+  submit:
     # Specify the runner
     runs-on: ubuntu-latest
 
