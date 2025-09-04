@@ -15,11 +15,11 @@ BuildRequires:  rust, cargo
 xremap is a key remapper for Linux. It supports app-specific remapping and Wayland.
 
 ### **Main Package**
-Conflicts:      %{name}-gnome, %{name}-x11, %{name}-kde, %{name}-wlroots
+Conflicts:      %{name}-gnome, %{name}-x11, %{name}-kde, %{name}-wlroots, %{name}-hypr, %{name}-niri
 
 %package gnome
 Summary:        xremap with GNOME Wayland support
-Conflicts:      %{name}, %{name}-x11, %{name}-kde, %{name}-wlroots
+Conflicts:      %{name}, %{name}-x11, %{name}-kde, %{name}-wlroots, %{name}-hypr, %{name}-niri
 Requires:       gnome-shell
 
 %description gnome
@@ -27,7 +27,7 @@ This variant of xremap is built with GNOME Wayland support.
 
 %package x11
 Summary:        xremap with X11 support
-Conflicts:      %{name}, %{name}-gnome, %{name}-kde, %{name}-wlroots
+Conflicts:      %{name}, %{name}-gnome, %{name}-kde, %{name}-wlroots, %{name}-hypr, %{name}-niri
 Requires:       xorg-x11-server-Xorg
 
 %description x11
@@ -35,18 +35,34 @@ This variant of xremap is built with X11 support.
 
 %package kde
 Summary:        xremap with KDE Plasma Wayland support
-Conflicts:      %{name}, %{name}-gnome, %{name}-x11, %{name}-wlroots
+Conflicts:      %{name}, %{name}-gnome, %{name}-x11, %{name}-wlroots, %{name}-hypr, %{name}-niri
 Requires:       plasma-workspace
 
 %description kde
 This variant of xremap is built with KDE Plasma Wayland support.
 
 %package wlroots
-Summary:        xremap with wlroots support (Sway, Hyprland, etc.)
-Conflicts:      %{name}, %{name}-gnome, %{name}-x11, %{name}-kde
+Summary:        xremap with wlroots support (Sway, etc.)
+Conflicts:      %{name}, %{name}-gnome, %{name}-x11, %{name}-kde, %{name}-hypr, %{name}-niri
 
 %description wlroots
-This variant of xremap is built with wlroots support for compositors like Sway and Hyprland.
+This variant of xremap is built with wlroots support for compositors like Sway.
+
+%package hypr
+Summary:        xremap with Hyprland support
+Conflicts:      %{name}, %{name}-gnome, %{name}-x11, %{name}-kde, %{name}-wlroots, %{name}-niri
+Requires: hyprland
+
+%description hypr
+This variant of xremap is built with Hyprland support.
+
+%package niri
+Summary:        xremap with Niri support
+Conflicts:      %{name}, %{name}-gnome, %{name}-x11, %{name}-kde, %{name}-wlroots, %{name}-hypr
+Requires: niri
+
+%description niri
+This variant of xremap is built with Niri support.
 
 %prep
 %autosetup -n %{name}-%{version}
@@ -72,6 +88,14 @@ cargo build --release --features kde --target-dir target-kde
 export RUSTFLAGS="-C debuginfo=2 -C metadata=wlroots"
 cargo build --release --features wlroots --target-dir target-wlroots
 
+# Build hypr variant
+export RUSTFLAGS="-C debuginfo=2 -C metadata=hypr"
+cargo build --release --features hypr --target-dir target-hypr
+
+# Build niri variant
+export RUSTFLAGS="-C debuginfo=2 -C metadata=niri"
+cargo build --release --features niri --target-dir target-niri
+
 %install
 rm -rf %{buildroot}
 
@@ -89,6 +113,12 @@ install -D -m 0755 target-kde/release/xremap %{buildroot}%{_bindir}/xremap-kde
 
 # Install wlroots variant
 install -D -m 0755 target-wlroots/release/xremap %{buildroot}%{_bindir}/xremap-wlroots
+
+# Install hypr variant
+install -D -m 0755 target-hypr/release/xremap %{buildroot}%{_bindir}/xremap-hypr
+
+# Install niri variant
+install -D -m 0755 target-niri/release/xremap %{buildroot}%{_bindir}/xremap-niri
 
 # Install udev rules
 install -D -m 0644 %{SOURCE1} %{buildroot}/usr/lib/udev/rules.d/00-xremap-input.rules
@@ -138,6 +168,22 @@ if [ $1 -eq 0 ]; then
     alternatives --remove xremap %{_bindir}/xremap-wlroots
 fi
 
+%post hypr
+alternatives --install %{_bindir}/xremap xremap %{_bindir}/xremap-hypr 20
+
+%preun hypr
+if [ $1 -eq 0 ]; then
+    alternatives --remove xremap %{_bindir}/xremap-hypr
+fi
+
+%post niri
+alternatives --install %{_bindir}/xremap xremap %{_bindir}/xremap-niri 20
+
+%preun niri
+if [ $1 -eq 0 ]; then
+    alternatives --remove xremap %{_bindir}/xremap-niri
+fi
+
 %files
 %license LICENSE
 %doc README.md
@@ -166,6 +212,18 @@ fi
 %license LICENSE
 %doc README.md
 %{_bindir}/xremap-wlroots
+/usr/lib/udev/rules.d/00-xremap-input.rules
+
+%files hypr
+%license LICENSE
+%doc README.md
+%{_bindir}/xremap-hypr
+/usr/lib/udev/rules.d/00-xremap-input.rules
+
+%files niri
+%license LICENSE
+%doc README.md
+%{_bindir}/xremap-niri
 /usr/lib/udev/rules.d/00-xremap-input.rules
 
 %changelog
