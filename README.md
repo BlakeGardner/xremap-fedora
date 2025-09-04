@@ -22,7 +22,9 @@ Due to differences in how application specific remapping is implemented in diffe
 - **Vanilla (`xremap`)**: Use this variant if you're unsure which one to choose.
 - **GNOME (`xremap-gnome`)**: This variant is recommended if you want application-specific remapping to work in GNOME.
 - **KDE (`xremap-kde`)**: This variant is recommended if you want application-specific remapping to work in KDE Plasma.
-- **wlroots (`xremap-wlroots`)**: This variant is recommended if you're using a wlroots-based compositor.
+- **wlroots (`xremap-wlroots`)**: This variant is recommended if you're using a wlroots-based compositor like Sway.
+- **Hyprland (`xremap-hypr`)**: This variant is specifically built for Hyprland compositor.
+- **Niri (`xremap-niri`)**: This variant is specifically built for Niri compositor.
 - **X11 (`xremap-x11`)**: This variant is recommended if you're using an X11-based desktop environment.
 
 **Note:** Only one variant can be installed at a time.
