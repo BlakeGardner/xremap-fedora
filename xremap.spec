@@ -1,6 +1,6 @@
 Name:           xremap
 Version:        0.10.16
-Release:        1%{?dist}
+Release:        2%{?dist}
 %define _debugsource_template %{nil}
 Summary:        A key remapper for Linux supporting app-specific remapping and Wayland.
 
@@ -227,6 +227,9 @@ fi
 /usr/lib/udev/rules.d/00-xremap-input.rules
 
 %changelog
+* Thu Sep 4 2025 Blake Gardner <blakerg@gmail.com> - 0.10.16-2
+- Added Hyprland and niri package variants
+
 * Thu Sep 4 2025 Blake Gardner <blakerg@gmail.com> - 0.10.16-1
 - Update xremap to upstream version 0.10.16
 
