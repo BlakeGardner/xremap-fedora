@@ -80,6 +80,30 @@ jobs:
           echo "token = ${{ secrets.COPR_TOKEN }}" >> ~/.config/copr
           echo "copr_url = https://copr.fedorainfracloud.org" >> ~/.config/copr
           
-      - name: Submit Source RPM to COPR
+      - name: Install build dependencies
         run: |
-          copr-cli build blakegardner/xremap ~/rpmbuild/SRPMS/xremap-*.src.rpm
+          cd ~/rpmbuild/SPECS
+          dnf builddep -y xremap.spec
+
+      - name: Build RPM packages locally
+        run: |
+          cd ~/rpmbuild/SPECS
+          
+          # Build all RPM variants
+          rpmbuild -bb xremap.spec
+          
+          # List built RPMs
+          ls -la ~/rpmbuild/RPMS/*/
+
+      # - name: Submit Source RPM to COPR
+      #   run: |
+      #     copr-cli build blakegardner/xremap ~/rpmbuild/SRPMS/xremap-*.src.rpm
+
+      - name: Upload RPMs to GitHub Release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: |
+            ~/rpmbuild/SRPMS/*.src.rpm
+            ~/rpmbuild/RPMS/*/*.rpm
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
