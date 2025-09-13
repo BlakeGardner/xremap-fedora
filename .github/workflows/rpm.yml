@@ -71,15 +71,6 @@ jobs:
           path: |
             ~/rpmbuild/SRPMS/*.src.rpm
 
-      - name: Configure copr-cli
-        run: |
-          mkdir -p ~/.config
-          echo "[copr-cli]" > ~/.config/copr
-          echo "login = ${{ secrets.COPR_LOGIN }}" >> ~/.config/copr
-          echo "username = blakegardner" >> ~/.config/copr
-          echo "token = ${{ secrets.COPR_TOKEN }}" >> ~/.config/copr
-          echo "copr_url = https://copr.fedorainfracloud.org" >> ~/.config/copr
-          
       - name: Install build dependencies
         run: |
           cd ~/rpmbuild/SPECS
@@ -94,6 +85,15 @@ jobs:
           
           # List built RPMs
           ls -la ~/rpmbuild/RPMS/*/
+
+      - name: Configure copr-cli
+        run: |
+          mkdir -p ~/.config
+          echo "[copr-cli]" > ~/.config/copr
+          echo "login = ${{ secrets.COPR_LOGIN }}" >> ~/.config/copr
+          echo "username = blakegardner" >> ~/.config/copr
+          echo "token = ${{ secrets.COPR_TOKEN }}" >> ~/.config/copr
+          echo "copr_url = https://copr.fedorainfracloud.org" >> ~/.config/copr
 
       # - name: Submit Source RPM to COPR
       #   run: |
