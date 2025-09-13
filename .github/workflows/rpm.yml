@@ -10,13 +10,17 @@ on:
   workflow_dispatch:
 
 jobs:
-  submit:
+  build:
     # Specify the runner
     runs-on: ubuntu-latest
+    
+    strategy:
+      matrix:
+        fedora_version: [41, 42, 43]
 
     # Run the job inside a Fedora container
     container:
-      image: fedora:42
+      image: fedora:${{ matrix.fedora_version }}
 
     steps:
       # Checkout the repository
@@ -67,7 +71,7 @@ jobs:
       - name: Upload SRPM
         uses: actions/upload-artifact@v4
         with:
-          name: srpm
+          name: srpm-fedora-${{ matrix.fedora_version }}
           path: |
             ~/rpmbuild/SRPMS/*.src.rpm
 
@@ -86,6 +90,46 @@ jobs:
           # List built RPMs
           ls -la ~/rpmbuild/RPMS/*/
 
+      # Upload Binary RPMs as Artifact
+      - name: Upload Binary RPMs
+        uses: actions/upload-artifact@v4
+        with:
+          name: rpms-fedora-${{ matrix.fedora_version }}
+          path: |
+            ~/rpmbuild/RPMS/*/*.rpm
+
+  submit-to-copr:
+    needs: build
+    runs-on: ubuntu-latest
+    container:
+      image: fedora:42
+
+    steps:
+      - name: Checkout the repository
+        uses: actions/checkout@v3
+
+      - name: Install Required Packages
+        run: |
+          dnf -y update
+          dnf install -y rpm-build rpmdevtools dnf-plugins-core copr-cli
+          dnf install -y 'dnf-command(builddep)'
+          rpmdev-setuptree
+
+      - name: Copy Spec and Source Files
+        run: |
+          cp xremap.spec ~/rpmbuild/SPECS/
+          cp 00-xremap-input.rules ~/rpmbuild/SOURCES/
+
+      - name: Download Source Tarball
+        run: |
+          cd ~/rpmbuild/SPECS
+          spectool -g -R xremap.spec
+
+      - name: Build the Source RPM (SRPM)
+        run: |
+          cd ~/rpmbuild/SPECS
+          rpmbuild -bs xremap.spec
+
       - name: Configure copr-cli
         run: |
           mkdir -p ~/.config
@@ -95,15 +139,24 @@ jobs:
           echo "token = ${{ secrets.COPR_TOKEN }}" >> ~/.config/copr
           echo "copr_url = https://copr.fedorainfracloud.org" >> ~/.config/copr
 
-      # - name: Submit Source RPM to COPR
-      #   run: |
-      #     copr-cli build blakegardner/xremap ~/rpmbuild/SRPMS/xremap-*.src.rpm
+      - name: Submit Source RPM to COPR
+        run: |
+          copr-cli build blakegardner/xremap ~/rpmbuild/SRPMS/xremap-*.src.rpm
+
+  upload-to-release:
+    needs: build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
 
       - name: Upload RPMs to GitHub Release
         uses: softprops/action-gh-release@v1
         with:
           files: |
-            ~/rpmbuild/SRPMS/*.src.rpm
-            ~/rpmbuild/RPMS/*/*.rpm
+            artifacts/*/*
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
