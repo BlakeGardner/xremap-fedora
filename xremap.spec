@@ -1,5 +1,5 @@
 Name:           xremap
-Version:        0.14.10
+Version:        0.14.11
 Release:        1%{?dist}
 %define _debugsource_template %{nil}
 Summary:        A key remapper for Linux supporting app-specific remapping and Wayland.
@@ -15,11 +15,11 @@ BuildRequires:  rust, cargo
 xremap is a key remapper for Linux. It supports app-specific remapping and Wayland.
 
 ### **Main Package**
-Conflicts:      %{name}-gnome, %{name}-x11, %{name}-kde, %{name}-wlroots, %{name}-hypr, %{name}-niri
+Conflicts:      %{name}-gnome, %{name}-x11, %{name}-kde, %{name}-wlroots, %{name}-hypr, %{name}-niri, %{name}-cosmic, %{name}-socket
 
 %package gnome
 Summary:        xremap with GNOME Wayland support
-Conflicts:      %{name}, %{name}-x11, %{name}-kde, %{name}-wlroots, %{name}-hypr, %{name}-niri
+Conflicts:      %{name}, %{name}-x11, %{name}-kde, %{name}-wlroots, %{name}-hypr, %{name}-niri, %{name}-cosmic, %{name}-socket
 Requires:       gnome-shell
 
 %description gnome
@@ -27,7 +27,7 @@ This variant of xremap is built with GNOME Wayland support.
 
 %package x11
 Summary:        xremap with X11 support
-Conflicts:      %{name}, %{name}-gnome, %{name}-kde, %{name}-wlroots, %{name}-hypr, %{name}-niri
+Conflicts:      %{name}, %{name}-gnome, %{name}-kde, %{name}-wlroots, %{name}-hypr, %{name}-niri, %{name}-cosmic, %{name}-socket
 Requires:       xorg-x11-server-Xorg
 
 %description x11
@@ -35,7 +35,7 @@ This variant of xremap is built with X11 support.
 
 %package kde
 Summary:        xremap with KDE Plasma Wayland support
-Conflicts:      %{name}, %{name}-gnome, %{name}-x11, %{name}-wlroots, %{name}-hypr, %{name}-niri
+Conflicts:      %{name}, %{name}-gnome, %{name}-x11, %{name}-wlroots, %{name}-hypr, %{name}-niri, %{name}-cosmic, %{name}-socket
 Requires:       plasma-workspace
 
 %description kde
@@ -43,14 +43,14 @@ This variant of xremap is built with KDE Plasma Wayland support.
 
 %package wlroots
 Summary:        xremap with wlroots support (Sway, etc.)
-Conflicts:      %{name}, %{name}-gnome, %{name}-x11, %{name}-kde, %{name}-hypr, %{name}-niri
+Conflicts:      %{name}, %{name}-gnome, %{name}-x11, %{name}-kde, %{name}-hypr, %{name}-niri, %{name}-cosmic, %{name}-socket
 
 %description wlroots
 This variant of xremap is built with wlroots support for compositors like Sway.
 
 %package hypr
 Summary:        xremap with Hyprland support
-Conflicts:      %{name}, %{name}-gnome, %{name}-x11, %{name}-kde, %{name}-wlroots, %{name}-niri
+Conflicts:      %{name}, %{name}-gnome, %{name}-x11, %{name}-kde, %{name}-wlroots, %{name}-niri, %{name}-cosmic, %{name}-socket
 Requires: hyprland
 
 %description hypr
@@ -58,11 +58,26 @@ This variant of xremap is built with Hyprland support.
 
 %package niri
 Summary:        xremap with Niri support
-Conflicts:      %{name}, %{name}-gnome, %{name}-x11, %{name}-kde, %{name}-wlroots, %{name}-hypr
+Conflicts:      %{name}, %{name}-gnome, %{name}-x11, %{name}-kde, %{name}-wlroots, %{name}-hypr, %{name}-cosmic, %{name}-socket
 Requires: niri
 
 %description niri
 This variant of xremap is built with Niri support.
+
+%package cosmic
+Summary:        xremap with COSMIC Wayland support
+Conflicts:      %{name}, %{name}-gnome, %{name}-x11, %{name}-kde, %{name}-wlroots, %{name}-hypr, %{name}-niri, %{name}-socket
+Requires: cosmic-session
+
+%description cosmic
+This variant of xremap is built with COSMIC Wayland support (System76's COSMIC desktop).
+
+%package socket
+Summary:        xremap with socket client support
+Conflicts:      %{name}, %{name}-gnome, %{name}-x11, %{name}-kde, %{name}-wlroots, %{name}-hypr, %{name}-niri, %{name}-cosmic
+
+%description socket
+This variant of xremap is built with socket client support and logind session monitor.
 
 %prep
 %autosetup -n %{name}-%{version}
@@ -96,6 +111,14 @@ cargo build --release --features hypr --target-dir target-hypr
 export RUSTFLAGS="-C debuginfo=2 -C metadata=niri"
 cargo build --release --features niri --target-dir target-niri
 
+# Build cosmic variant
+export RUSTFLAGS="-C debuginfo=2 -C metadata=cosmic"
+cargo build --release --features cosmic --target-dir target-cosmic
+
+# Build socket variant
+export RUSTFLAGS="-C debuginfo=2 -C metadata=socket"
+cargo build --release --features socket --target-dir target-socket
+
 %install
 rm -rf %{buildroot}
 
@@ -119,6 +142,12 @@ install -D -m 0755 target-hypr/release/xremap %{buildroot}%{_bindir}/xremap-hypr
 
 # Install niri variant
 install -D -m 0755 target-niri/release/xremap %{buildroot}%{_bindir}/xremap-niri
+
+# Install cosmic variant
+install -D -m 0755 target-cosmic/release/xremap %{buildroot}%{_bindir}/xremap-cosmic
+
+# Install socket variant
+install -D -m 0755 target-socket/release/xremap %{buildroot}%{_bindir}/xremap-socket
 
 # Install udev rules
 install -D -m 0644 %{SOURCE1} %{buildroot}/usr/lib/udev/rules.d/00-xremap-input.rules
@@ -184,6 +213,22 @@ if [ $1 -eq 0 ]; then
     alternatives --remove xremap %{_bindir}/xremap-niri
 fi
 
+%post cosmic
+alternatives --install %{_bindir}/xremap xremap %{_bindir}/xremap-cosmic 20
+
+%preun cosmic
+if [ $1 -eq 0 ]; then
+    alternatives --remove xremap %{_bindir}/xremap-cosmic
+fi
+
+%post socket
+alternatives --install %{_bindir}/xremap xremap %{_bindir}/xremap-socket 20
+
+%preun socket
+if [ $1 -eq 0 ]; then
+    alternatives --remove xremap %{_bindir}/xremap-socket
+fi
+
 %files
 %license LICENSE
 %doc README.md
@@ -226,7 +271,23 @@ fi
 %{_bindir}/xremap-niri
 /usr/lib/udev/rules.d/00-xremap-input.rules
 
+%files cosmic
+%license LICENSE
+%doc README.md
+%{_bindir}/xremap-cosmic
+/usr/lib/udev/rules.d/00-xremap-input.rules
+
+%files socket
+%license LICENSE
+%doc README.md
+%{_bindir}/xremap-socket
+/usr/lib/udev/rules.d/00-xremap-input.rules
+
 %changelog
+* Mon Feb 03 2026 Blake Gardner <blakerg@gmail.com> - 0.14.11-1
+- Update xremap to upstream version 0.14.11
+- Added COSMIC desktop and socket client package variants
+
 * Wed Jan 21 2026 Blake Gardner <blakerg@gmail.com> - 0.14.10-1
 - Update xremap to upstream version 0.14.10
 
