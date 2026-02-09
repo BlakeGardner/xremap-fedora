@@ -1,5 +1,5 @@
 Name:           xremap
-Version:        0.14.11
+Version:        0.14.12
 Release:        1%{?dist}
 %define _debugsource_template %{nil}
 Summary:        A key remapper for Linux supporting app-specific remapping and Wayland.
@@ -284,6 +284,9 @@ fi
 /usr/lib/udev/rules.d/00-xremap-input.rules
 
 %changelog
+* Mon Feb 09 2026 Blake Gardner <blakerg@gmail.com> - 0.14.12-1
+- Update xremap to upstream version 0.14.12
+
 * Mon Feb 03 2026 Blake Gardner <blakerg@gmail.com> - 0.14.11-1
 - Update xremap to upstream version 0.14.11
 - Added COSMIC desktop and socket client package variants
