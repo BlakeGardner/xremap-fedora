@@ -12,7 +12,7 @@ jobs:
     
     strategy:
       matrix:
-        fedora_version: [41, 42, 43]
+        fedora_version: [43, 44, rawhide]
 
     # Run the job inside a Fedora container
     container:
@@ -21,7 +21,7 @@ jobs:
     steps:
       # Checkout the repository
       - name: Checkout the repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       # Install Required Packages
       - name: Install Required Packages
@@ -102,7 +102,7 @@ jobs:
 
     steps:
       - name: Checkout the repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Install Required Packages
         run: |
