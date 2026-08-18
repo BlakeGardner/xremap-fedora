@@ -4,7 +4,7 @@
 # For each missing version (oldest -> newest) this script:
 #   1. Updates xremap.spec (Version, Release reset to 1, %changelog entry),
 #      commits and pushes to master.
-#   2. Creates the GitHub release v<version>, which triggers the rpm workflow.
+#   2. Creates the GitHub release <version>-1, which triggers the rpm workflow.
 #   3. Waits for the rpm workflow run to succeed before moving to the next
 #      version (COPR builds must land in version order, and the submit job
 #      waits for the COPR build to finish).
@@ -61,8 +61,8 @@ for version in "${missing[@]}"; do
     echo
     echo "=== Backfilling $version ==="
 
-    if gh release view "v$version" --repo "$repo" > /dev/null 2>&1; then
-        echo "Release v$version already exists — skipping."
+    if gh release view "$version-1" --repo "$repo" > /dev/null 2>&1; then
+        echo "Release $version-1 already exists — skipping."
         continue
     fi
 
@@ -75,8 +75,8 @@ for version in "${missing[@]}"; do
     fi
     sha=$(git rev-parse HEAD)
 
-    gh release create "v$version" --repo "$repo" \
-        --title "xremap $version" \
+    gh release create "$version-1" --repo "$repo" \
+        --title "$version-1" \
         --notes "Fedora RPM packages for xremap upstream version $version."
 
     echo "Waiting for the rpm workflow run for $sha to start..."

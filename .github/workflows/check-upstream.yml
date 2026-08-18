@@ -49,11 +49,13 @@ jobs:
           GH_TOKEN: ${{ secrets.RELEASE_PAT }}
         run: |
           version=$(awk '/^Version:/ {print $2}' xremap.spec)
-          if gh release view "v$version" --repo "$GITHUB_REPOSITORY" > /dev/null 2>&1; then
-            echo "Release v$version already exists — nothing to do."
+          release=$(awk '/^Release:/ {print $2}' xremap.spec | sed 's/%.*//')
+          tag="$version-$release"
+          if gh release view "$tag" --repo "$GITHUB_REPOSITORY" > /dev/null 2>&1; then
+            echo "Release $tag already exists — nothing to do."
           else
-            gh release create "v$version" \
+            gh release create "$tag" \
               --repo "$GITHUB_REPOSITORY" \
-              --title "xremap $version" \
+              --title "$tag" \
               --notes "Fedora RPM packages for xremap upstream version $version."
           fi

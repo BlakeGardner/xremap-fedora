@@ -57,14 +57,16 @@ A udev rules file is installed at `/usr/lib/udev/rules.d/00-xremap-input.rules` 
 
 Releases track upstream [xremap](https://github.com/xremap/xremap) automatically:
 
-- The [`check-upstream` workflow](.github/workflows/check-upstream.yml) runs daily and compares the latest upstream release against the `Version:` in [`xremap.spec`](xremap.spec). If upstream is newer, it updates the spec (version, release reset to `1`, new `%changelog` entry) via [`scripts/update-spec-version.sh`](scripts/update-spec-version.sh), pushes to `master`, and publishes a GitHub release tagged `v<version>`.
+- The [`check-upstream` workflow](.github/workflows/check-upstream.yml) runs daily and compares the latest upstream release against the `Version:` in [`xremap.spec`](xremap.spec). If upstream is newer, it updates the spec (version, release reset to `1`, new `%changelog` entry) via [`scripts/update-spec-version.sh`](scripts/update-spec-version.sh), pushes to `master`, and publishes a GitHub release tagged `<version>-<release>` (e.g. `0.14.19-1`).
 - Publishing a release triggers the [`rpm` workflow](.github/workflows/rpm.yml), which builds the RPMs and submits the SRPM to COPR.
 - [`scripts/backfill-releases.sh`](scripts/backfill-releases.sh) is a one-off script that packages every upstream version missed since the currently packaged one, oldest first, waiting for each build to succeed before starting the next.
 
 The automation requires a `RELEASE_PAT` repository secret (a fine-grained personal access token scoped to this repository with **Contents: Read and write**). A PAT is needed because pushes and releases made with the default `GITHUB_TOKEN` do not trigger other workflows.
 
+The `Release:` field in the spec is the packaging revision for a given upstream version. To ship a packaging-only fix (spec change, added dependency, build flag) without a new upstream version, bump `Release:` (e.g. `2%{?dist}`), add a `%changelog` entry, push, and publish a release tagged `<version>-2` — the revision is part of the tag, so each packaging revision gets its own release and build.
+
 ### Manual Release (fallback)
 
 1. Update `xremap.spec` for the new upstream version: `./scripts/update-spec-version.sh <version>`
 2. Commit and push to `master`.
-3. Publish a GitHub release tagged `v<version>` — this triggers the RPM build and COPR submission.
+3. Publish a GitHub release tagged `<version>-<release>` (e.g. `0.14.19-1`) — this triggers the RPM build and COPR submission.
