@@ -52,3 +52,19 @@ Log out and log back in for the group changes to take effect.
 ### Udev Rules
 
 A udev rules file is installed at `/usr/lib/udev/rules.d/00-xremap-input.rules` to set the appropriate permissions on input devices.
+
+## Release Automation
+
+Releases track upstream [xremap](https://github.com/xremap/xremap) automatically:
+
+- The [`check-upstream` workflow](.github/workflows/check-upstream.yml) runs daily and compares the latest upstream release against the `Version:` in [`xremap.spec`](xremap.spec). If upstream is newer, it updates the spec (version, release reset to `1`, new `%changelog` entry) via [`scripts/update-spec-version.sh`](scripts/update-spec-version.sh), pushes to `master`, and publishes a GitHub release tagged `v<version>`.
+- Publishing a release triggers the [`rpm` workflow](.github/workflows/rpm.yml), which builds the RPMs and submits the SRPM to COPR.
+- [`scripts/backfill-releases.sh`](scripts/backfill-releases.sh) is a one-off script that packages every upstream version missed since the currently packaged one, oldest first, waiting for each build to succeed before starting the next.
+
+The automation requires a `RELEASE_PAT` repository secret (a fine-grained personal access token scoped to this repository with **Contents: Read and write**). A PAT is needed because pushes and releases made with the default `GITHUB_TOKEN` do not trigger other workflows.
+
+### Manual Release (fallback)
+
+1. Update `xremap.spec` for the new upstream version: `./scripts/update-spec-version.sh <version>`
+2. Commit and push to `master`.
+3. Publish a GitHub release tagged `v<version>` — this triggers the RPM build and COPR submission.
