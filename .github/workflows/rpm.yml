@@ -6,13 +6,32 @@ on:
   workflow_dispatch:
 
 jobs:
+  copr-chroots:
+    # Derive the Fedora versions to build from the COPR project's enabled
+    # chroots so CI always matches what COPR publishes.
+    runs-on: ubuntu-latest
+
+    outputs:
+      fedora_versions: ${{ steps.chroots.outputs.fedora_versions }}
+
+    steps:
+      - name: Get Fedora versions from the COPR project chroots
+        id: chroots
+        run: |
+          versions=$(curl -sSf "https://copr.fedorainfracloud.org/api_3/project?ownername=blakegardner&projectname=xremap" |
+            jq -c '[.chroot_repos | keys[] | select(startswith("fedora-")) | split("-")[1]] | unique')
+          echo "Fedora versions: $versions"
+          echo "fedora_versions=$versions" >> "$GITHUB_OUTPUT"
+
   build:
+    needs: copr-chroots
+
     # Specify the runner
     runs-on: ubuntu-latest
     
     strategy:
       matrix:
-        fedora_version: [41, 42, 43]
+        fedora_version: ${{ fromJson(needs.copr-chroots.outputs.fedora_versions) }}
 
     # Run the job inside a Fedora container
     container:
@@ -21,7 +40,7 @@ jobs:
     steps:
       # Checkout the repository
       - name: Checkout the repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       # Install Required Packages
       - name: Install Required Packages
@@ -102,7 +121,7 @@ jobs:
 
     steps:
       - name: Checkout the repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Install Required Packages
         run: |
